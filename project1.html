@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+<title>Loading Data</title>
+
+<script type="text/javascript">
+window.onload = function() {
+  var imgs = document.getElementsByTagName('img'), i, img;
+  for (i = 0; i < imgs.length; i++) {
+    img = imgs[i];
+    // center an image if it is the only element of its parent
+    if (img.parentElement.childElementCount === 1)
+      img.parentElement.style.textAlign = 'center';
+  }
+};
+</script>
+
+
+
+
+
+<style type="text/css">
+body, td {
+   font-family: sans-serif;
+   background-color: white;
+   font-size: 13px;
+}
+
+body {
+  max-width: 800px;
+  margin: auto;
+  padding: 1em;
+  line-height: 20px;
+}
+
+tt, code, pre {
+   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+}
+
+h1 {
+   font-size:2.2em;
+}
+
+h2 {
+   font-size:1.8em;
+}
+
+h3 {
+   font-size:1.4em;
+}
+
+h4 {
+   font-size:1.0em;
+}
+
+h5 {
+   font-size:0.9em;
+}
+
+h6 {
+   font-size:0.8em;
+}
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
+}
+
+pre, img {
+  max-width: 100%;
+}
+pre {
+  overflow-x: auto;
+}
+pre code {
+   display: block; padding: 0.5em;
+}
+
+code {
+  font-size: 92%;
+  border: 1px solid #ccc;
+}
+
+code[class] {
+  background-color: #F8F8F8;
+}
+
+table, td, th {
+  border: none;
+}
+
+blockquote {
+   color:#666666;
+   margin:0;
+   padding-left: 1em;
+   border-left: 0.5em #EEE solid;
+}
+
+hr {
+   height: 0px;
+   border-bottom: none;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
+}
+
+@media print {
+   * {
+      background: transparent !important;
+      color: black !important;
+      filter:none !important;
+      -ms-filter: none !important;
+   }
+
+   body {
+      font-size:12pt;
+      max-width:100%;
+   }
+
+   a, a:visited {
+      text-decoration: underline;
+   }
+
+   hr {
+      visibility: hidden;
+      page-break-before: always;
+   }
+
+   pre, blockquote {
+      padding-right: 1em;
+      page-break-inside: avoid;
+   }
+
+   tr, img {
+      page-break-inside: avoid;
+   }
+
+   img {
+      max-width: 100% !important;
+   }
+
+   @page :left {
+      margin: 15mm 20mm 15mm 10mm;
+   }
+
+   @page :right {
+      margin: 15mm 10mm 15mm 20mm;
+   }
+
+   p, h2, h3 {
+      orphans: 3; widows: 3;
+   }
+
+   h2, h3 {
+      page-break-after: avoid;
+   }
+}
+</style>
+
+
+
+</head>
+
+<body>
+<h2>Loading Data</h2>
+
+<p>First we need to load csv file in data variable (Reader should set working directory before starting):</p>
+
+<pre><code class="r">setwd(&quot;F:/Online Courses/Reproducible Research/Porject 1/repdata_2Fdata%2Factivity&quot;)
+data&lt;-read.csv(&quot;activity.csv&quot;)
+</code></pre>
+
+<h2>Preprocessing of data</h2>
+
+<p>Change date format into date </p>
+
+<pre><code class="r">data$date&lt;-as.Date(data$date)
+</code></pre>
+
+<h2>Histogram without NA values</h2>
+
+<p>Histogram of total number of steps taken on each day is shown below:</p>
+
+<pre><code class="r">sum_steps&lt;-aggregate(data$steps,by=list(data$date),FUN=sum,na.rm=TRUE) 
+
+hist(sum_steps$x, 
+      breaks=seq(from=0, to=25000, by=2500),
+      col=&quot;yellow&quot;, 
+      xlab=&quot;Total number of steps&quot;, 
+      ylim=c(0, 20), 
+      main=&quot;Histogram of the total number of steps taken each day\n(NA removed)&quot;)
+</code></pre>
+
+<p><img src="figure/unnamed-chunk-3-1.png" alt="plot of chunk unnamed-chunk-3"></p>
+
+<h2>Mean and Median of Steps</h2>
+
+<p>Mean and median number of steps taken each day</p>
+
+<pre><code class="r">mean(sum_steps$x)
+</code></pre>
+
+<pre><code>## [1] 9354.23
+</code></pre>
+
+<pre><code class="r">median(sum_steps$x)
+</code></pre>
+
+<pre><code>## [1] 10395
+</code></pre>
+
+<h2>Time Series Plot</h2>
+
+<p>Time series plot of the average number of steps taken</p>
+
+<pre><code class="r">avg_steps&lt;-aggregate(data$steps,by=list(data$interval),FUN=mean,na.rm=TRUE)
+
+colnames(avg_steps)&lt;-c(&quot;interval&quot;,&quot;steps&quot;)
+
+library(ggplot2)
+</code></pre>
+
+<pre><code>## Warning: package &#39;ggplot2&#39; was built under R version 3.3.2
+</code></pre>
+
+<pre><code class="r">ggplot(aes(x=interval,y=steps),data=avg_steps)+geom_line()
+</code></pre>
+
+<p><img src="figure/unnamed-chunk-5-1.png" alt="plot of chunk unnamed-chunk-5"></p>
+
+<h2>Maximum Average 5 minute interval</h2>
+
+<p>The 5-minute interval that, on average, contains the maximum number of steps</p>
+
+<pre><code class="r">avg_steps[avg_steps$steps==max(avg_steps$steps),1]
+</code></pre>
+
+<pre><code>## [1] 835
+</code></pre>
+
+<h2>Imputing NA</h2>
+
+<h4>Here is code to describe and show a strategy for imputing missing data</h4>
+
+<p>Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NA&#39;s)</p>
+
+<pre><code class="r">sum(is.na(data$steps))
+</code></pre>
+
+<pre><code>## [1] 2304
+</code></pre>
+
+<p>Replace NA values with the mean of the steps</p>
+
+<pre><code class="r">data$steps[is.na(data$steps)]&lt;-mean(data$steps,na.rm=TRUE)
+</code></pre>
+
+<p>Here are some rows of new data set</p>
+
+<pre><code class="r">head(data)
+</code></pre>
+
+<pre><code>##     steps       date interval
+## 1 37.3826 2012-10-01        0
+## 2 37.3826 2012-10-01        5
+## 3 37.3826 2012-10-01       10
+## 4 37.3826 2012-10-01       15
+## 5 37.3826 2012-10-01       20
+## 6 37.3826 2012-10-01       25
+</code></pre>
+
+<h2>Histogram with Repaced NA values</h2>
+
+<p>Histogram of total number of steps taken on each day is shown below:</p>
+
+<pre><code class="r">sum_steps&lt;-aggregate(data$steps,by=list(data$date),FUN=sum,na.rm=TRUE) 
+
+hist(sum_steps$x, 
+      breaks=seq(from=0, to=25000, by=2500),
+      col=&quot;yellow&quot;, 
+      xlab=&quot;Total number of steps&quot;, 
+      ylim=c(0, 30), 
+      main=&quot;Total number of steps taken each day\n(NA replaced by mean)&quot;)
+</code></pre>
+
+<p><img src="figure/unnamed-chunk-10-1.png" alt="plot of chunk unnamed-chunk-10"></p>
+
+<p>Mean and median number of steps taken each day after replacing NA values with mean</p>
+
+<pre><code class="r">mean(sum_steps$x)
+</code></pre>
+
+<pre><code>## [1] 10766.19
+</code></pre>
+
+<pre><code class="r">median(sum_steps$x)
+</code></pre>
+
+<pre><code>## [1] 10766.19
+</code></pre>
+
+<h2>Differences in activity patterns between weekdays and weekends</h2>
+
+<p>Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends</p>
+
+<pre><code class="r"># Convert date into weekdays
+
+data$days=tolower(weekdays(data$date))
+
+#Now categorised days into weekend and weekdays
+
+data$day_type&lt;-ifelse(data$days==&quot;saturday&quot;|data$days==&quot;sunday&quot;,&quot;weekend&quot;,&quot;weekday&quot;)
+
+#Take mean steps taken on weekend or weekday in the intervals
+
+avg_steps&lt;-aggregate(data$steps,by=list(data$interval,data$day_type),FUN=mean,na.rm=TRUE)
+
+colnames(avg_steps)&lt;-c(&quot;interval&quot;,&quot;day_type&quot;,&quot;steps&quot;)
+
+# Create panel plot between average steps and interval seperated by day type
+
+ggplot(aes(x=interval,y=steps),data=avg_steps)+geom_line()+facet_wrap(~avg_steps$day_type)
+</code></pre>
+
+<p><img src="figure/unnamed-chunk-12-1.png" alt="plot of chunk unnamed-chunk-12"></p>
+
+</body>
+
+</html>
